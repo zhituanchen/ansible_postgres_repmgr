@@ -1,5 +1,5 @@
 # ansible_postgres_repmgr
-use ansible playbook scripts auto install PG and repmgr
+use ansible playbook scripts auto install PG(rpm) and repmgr
 
 # Quick Start
 ## system and db info
