@@ -1,0 +1,3 @@
+{% for host in groups['postgres_repmgr'] %}
+{{ host }} {{ hostvars[host].ansible_facts['hostname'] }}
+{% endfor %}

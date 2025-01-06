@@ -1,0 +1,40 @@
+---
+
+    - name: set hostname on node1
+      shell: hostnamectl set-hostname {{postgres_node_name}}01
+      when: cluster_role == "primary" 
+   
+    - name: set hostname on node2
+      shell: hostnamectl set-hostname {{postgres_node_name}}02
+      when: cluster_role == "standby"
+
+    - name: Check if packages are installed
+      command: "rpm -q {{ item }}"
+      with_items:
+        - expect
+      register: package_status
+      changed_when: false
+      failed_when: package_status.rc != 0
+
+    - name: Generate /etc/hosts content
+      template:
+        src: hosts.j2
+        dest: /tmp/hosts_content
+        owner: root
+        group: root
+        mode: 0644
+    
+    - name: Read content from remote /tmp/hosts_content
+      shell: cat /tmp/hosts_content
+      delegate_to: "{{ inventory_hostname }}"
+      register: hosts_content
+    
+    - name: Use the content read from the remote file
+      blockinfile:
+        path: /etc/hosts
+        block: "{{ hosts_content.stdout }}"
+        marker: "# {mark} ANSIBLE postgres HOSTS for /tmp/hosts_content"
+        insertafter: EOF
+        create: yes
+        backup: yes
+        state: present

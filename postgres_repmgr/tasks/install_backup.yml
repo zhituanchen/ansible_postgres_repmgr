@@ -1,0 +1,13 @@
+---
+
+- name: create data directory
+  file:
+    path: '{{backup_dir}}/{{item.0}}/{{item.1}}'
+    state: directory
+    owner: root
+    group: root
+    recurse: yes
+  with_nested: 
+  - ['mongodb_bak']
+  - ['mongodbdump', 'scripts', 'logs']
+  when:   (primary is defined and primary )

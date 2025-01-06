@@ -1,0 +1,30 @@
+---
+
+- name: create postgres_exporter user
+  become: yes
+  become_user: postgres
+  shell: |
+    psql -c "CREATE USER postgres_exporter WITH PASSWORD '{{ postgres_exporter_pass }}';"
+    psql -c "GRANT CONNECT ON DATABASE postgres TO postgres_exporter;"
+    psql -c "GRANT pg_monitor TO postgres_exporter;"
+  when: cluster_role == "primary"
+
+- name: Download postgres Exporter
+  copy: src={{download_target}}/{{exporter_binary}} dest=/usr/local/bin/{{exporter_binary}} mode=0755
+
+- name: Add postgres exporter system server
+  template:
+    dest: /etc/systemd/system/postgres_exporter.service
+    src: postgres_exporter.service.j2
+
+- name: Ensure postgres exporter is enabled
+  systemd:
+    daemon_reload: yes
+    name: postgres_exporter
+    enabled: yes
+
+- name: Start postgres exporter
+  service: 
+    name: postgres_exporter
+    state: restarted
+    enabled: yes

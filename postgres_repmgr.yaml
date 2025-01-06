@@ -1,0 +1,5 @@
+---
+- hosts: postgres_repmgr
+  gather_facts: yes
+  roles:
+    - postgres_repmgr
