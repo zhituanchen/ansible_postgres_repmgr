@@ -1,0 +1,17 @@
+[Unit]
+Description=https://github.com/prometheus-community/postgres_exporter
+After=network-online.target
+ 
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="DATA_SOURCE_NAME=postgresql://postgres_exporter:{{ postgres_exporter_pass  }}@localhost:5432/postgres?sslmode=disable"
+ExecStart=/usr/local/bin/postgres_exporter
+ExecReload=/bin/kill -HUP
+KillMode=process
+TimeoutStopSec=20s
+Restart=always
+ 
+[Install]
+WantedBy=default.target

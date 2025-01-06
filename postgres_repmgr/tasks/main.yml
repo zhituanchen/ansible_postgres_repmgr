@@ -1,0 +1,127 @@
+---
+
+- name: prepare on all node
+  include: prepare.yml
+  tags: [prepare]
+
+- name: postgres_ssh on all node
+  include: 01_postgres_ssh.yml
+  tags: [postgres_ssh]
+
+- name: prepare dir
+  file:
+    name: "{{item}}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{data_path}}/postgres/data/"
+
+- name: download rpm
+  copy: src={{download_target}}/{{item.name}} dest=/tmp/{{item.name}} mode=0755
+  with_items:
+    - { name: 'libzstd-1.5.5-1.el7.x86_64.rpm' }
+    - { name: 'postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm' }
+    - { name: 'postgresql15-15.10-1PGDG.rhel7.x86_64.rpm' }
+    - { name: 'postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm' }
+    - { name: 'postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm' }
+    - { name: 'repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm' }
+
+- name: install rpm
+  command: rpm --force  -i --nodigest /tmp/{{ item }}
+  with_items:
+    - libzstd-1.5.5-1.el7.x86_64.rpm
+    - postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm
+    - postgresql15-15.10-1PGDG.rhel7.x86_64.rpm
+    - postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm
+    - postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm
+    - repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm
+
+- name: change params on all node
+  include: 02_change_params.yml
+  tags: [change_params]
+
+- name: change dir postgres
+  file:
+    path: "{{data_path}}/postgres/data/"
+    state: directory
+    owner: postgres
+    group: postgres
+    recurse: True
+
+- name: Add postgresql system server
+  template:
+    dest: /usr/lib/systemd/system/postgresql-15.service
+    src: postgresql-15.service
+
+- name: ensure postgresql-15  is enabled
+  systemd:
+    daemon_reload: yes
+    name: postgresql-15
+    enabled: yes
+
+- name: pg init
+  shell: /usr/bin/postgresql-15-setup initdb 
+  when: cluster_role == "primary"
+  
+- name: start postgresql-15
+  service: 
+    name: postgresql-15
+    state: started
+    enabled: yes
+  when: cluster_role == "primary"
+
+- name: prepare archive dir
+  file:
+    name: "{{item}}"
+    state: directory
+    mode: '0755'
+    owner: postgres
+    group: postgres
+    recurse: True
+  with_items:
+    - "{{data_path}}/postgres/archive/"
+
+- name: postgresql.conf to the server
+  template:
+    src: postgresql.conf.j2
+    dest: "{{data_path}}/postgres/data/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  when: cluster_role == "primary"
+
+- name: Add PostgreSQL configuration
+  lineinfile:
+    path: "{{data_path}}/postgres/data/pg_hba.conf"
+    line: "{{ item }}"
+    create: no
+  with_items:
+    - "# TYPE  DATABASE    USER    ADDRESS       METHOD"
+    - "local     all       all                    trust"
+    - "host      all       all    127.0.0.1/32    trust"
+    - "host      all       all    0.0.0.0/0       md5"
+    - "host   replication  all    0.0.0.0/0       md5"
+    - "local  replication  all                    trust"
+  when: cluster_role == "primary"
+
+- name: restart postgresql-15
+  service: 
+    name: postgresql-15
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: cluster_role == "primary"
+
+- name: change password for postgres user
+  become: yes
+  become_user: postgres
+  shell: psql -c "alter user postgres with encrypted password '{{ postgres_pass }}';"
+  when: cluster_role == "primary"
+
+- name: install postgres repmgr
+  include: 03_install_repmgr.yml
+  tags: [postgres_repmgr]
+
+- name: install postgres expoter
+  include: install_exporter.yml
+  tags: [postgres_expoter]

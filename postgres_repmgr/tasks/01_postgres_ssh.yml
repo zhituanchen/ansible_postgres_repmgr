@@ -1,0 +1,99 @@
+
+---
+
+    - name: check group for postgres
+      shell: grep postgres /etc/group
+      register: result
+      ignore_errors: True
+      changed_when: False
+
+    - name: add group for postgres
+      shell: /usr/sbin/groupadd -g 5433 postgres
+      changed_when: False
+      when: result is failed
+
+    - name: check group for oinstall
+      shell: grep oinstall /etc/group
+      register: result
+      ignore_errors: True
+      changed_when: False
+
+    - name: add group for oinstall
+      shell: /usr/sbin/groupadd -g 54321 oinstall
+      changed_when: False
+      when: result is failed
+
+    - name: check user for postgres
+      shell: id postgres
+      register: result
+      ignore_errors: True
+      changed_when: False
+
+    - name: Create postgres user with oinstall group
+      user:
+        name: "postgres"
+        state: present
+        group: "oinstall"
+        uid: "54333"
+      when: result is failed    
+
+    - name: change password for postgres
+      user:
+        name: "postgres"
+        password: "{{ 'postgres' | password_hash('sha512') }}"
+
+    - name: postgres_repmgr cluster
+      set_fact:
+        postgres_repmgr_servers_group: []
+    
+    - name: declare host group
+      set_fact:
+        postgres_repmgr_servers_group: "{{postgres_repmgr_servers_group}} + [ '{{ item }}' ]"
+      with_items: "{{ groups['postgres_repmgr'] }}"
+
+    - name: copy sshUserSetup on node1
+      template:
+        src: ../templates/{{ item }}
+        dest: /tmp/{{ item }}
+        mode: 0775
+      with_items:
+        ['sshUserSetup.sh','auto_postgres_ssh.sh']
+      when: cluster_role == "primary"
+
+    - name: clear postgres user ssh
+      shell: rm -rf /home/postgres/.ssh/*
+
+    - name: config postgres user ssh on node1
+      become: yes
+      become_user: postgres
+      shell: /usr/bin/expect -f /tmp/auto_postgres_ssh.sh
+      when: cluster_role == "primary"
+
+    - name: copy sshUserSetup on node2
+      template:
+        src: ../templates/{{ item }}
+        dest: /tmp/{{ item }}
+        mode: 0775
+      with_items:
+        ['auto_postgres_ssh02.sh']
+      when: cluster_role == "standby"
+
+    - name: config postgres user ssh on node2
+      become: yes
+      become_user: postgres
+      shell: /usr/bin/expect -f /tmp/auto_postgres_ssh02.sh
+      when: cluster_role == "standby"
+
+    - name: add bash_profile for postgres
+      lineinfile: dest=/home/postgres/.bash_profile line='{{ item.line }}'
+      with_items:
+      - line: " "
+      - line: "### for postgres "
+      - line: "export PGHOME=/usr/pgsql-15"
+      - line: "export PGDATA={{data_path}}/postgres/data/"
+      - line: "export PATH=$PGHOME/bin:$PATH"
+      - line: "export LANG=en_US.UTF-8"
+      - line: "export LD_LIBRARY_PATH=$PGHOME/lib:$LD_LIBRARY_PATH"
+
+    - name: change postgres group
+      shell: /usr/sbin/usermod -g postgres postgres

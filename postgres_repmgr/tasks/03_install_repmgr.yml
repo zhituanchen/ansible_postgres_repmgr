@@ -1,0 +1,72 @@
+---
+
+    - name: create repmgr
+      become: yes
+      become_user: postgres
+      shell: |
+        psql -c "create user repmgr WITH REPLICATION LOGIN ENCRYPTED PASSWORD '{{repmgr_password}}' superuser;"
+        psql -c "create database repmgr owner repmgr;"
+        psql -c "create extension repmgr;"
+      when: cluster_role == "primary"
+
+    - name: repmgr01.conf.js to the primary
+      template:
+        src: repmgr01.conf.js
+        dest: "/etc/repmgr/15/repmgr.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      when: cluster_role == "primary"
+
+    - name: primary register
+      become: yes
+      become_user: postgres
+      shell: echo "*:*:*:repmgr:{{repmgr_password}}" > ~/.pgpass && chmod 600  /home/postgres/.pgpass && /usr/pgsql-15/bin/repmgr -f /etc/repmgr/15/repmgr.conf primary register
+      when: cluster_role == "primary"
+
+    - name: repmgr02.conf.js to the standby
+      template:
+        src: repmgr02.conf.js
+        dest: "/etc/repmgr/15/repmgr.conf"
+        owner: postgres
+        group: postgres
+        mode: '0600'
+      when: cluster_role == "standby"
+
+    - name: using repmar standby clone
+      become: yes
+      become_user: postgres
+      shell: echo "*:*:*:repmgr:{{repmgr_password}}" > ~/.pgpass && chmod 600  /home/postgres/.pgpass && /usr/pgsql-15/bin/repmgr -h {{postgres_node_name}}01 -U repmgr -d repmgr -f  /etc/repmgr/15/repmgr.conf standby clone --force --fast-checkpoint
+      when: cluster_role == "standby"
+
+    - name: ensure postgresql-15  is enabled in standby
+      systemd:
+        daemon_reload: yes
+        name: postgresql-15
+        enabled: yes
+      when: cluster_role == "standby"
+
+    - name: start postgresql-15 in standby
+      service: 
+        name: postgresql-15
+        state: started
+        enabled: yes
+      when: cluster_role == "standby"
+
+    - name: standby register
+      become: yes
+      become_user: postgres
+      shell: /usr/pgsql-15/bin/repmgr -f /etc/repmgr/15/repmgr.conf standby register --force
+      when: cluster_role == "standby"
+
+    - name: echo cluster
+      become: yes
+      become_user: postgres
+      shell: /usr/pgsql-15/bin/repmgr -f /etc/repmgr/15/repmgr.conf cluster show
+      register: cluster_output
+      when: cluster_role == "primary"
+    
+    - name: output cluster show results
+      debug:
+        var: cluster_output.stdout
+      when: cluster_role == "primary"

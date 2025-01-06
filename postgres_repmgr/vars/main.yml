@@ -1,0 +1,8 @@
+---
+data_path: /db
+postgres_backup_username: backup_admin
+postgres_readonly_username: user_readonly
+download_target: /tmp/wisetop_deployer
+exporter_binary: postgres_exporter
+backup_dir: /backup/postgres
+postgres_node_name: rac

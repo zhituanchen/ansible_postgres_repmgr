@@ -1,0 +1,23 @@
+    - pam_limits:
+        domain: postgres
+        limit_type: soft
+        limit_item: nproc
+        value: '131072'
+
+    - pam_limits:
+        domain: postgres
+        limit_type: hard
+        limit_item: nproc
+        value: '131072'
+
+    - pam_limits:
+        domain: postgres
+        limit_type: soft
+        limit_item: nofile
+        value: '131072'
+
+    - pam_limits:
+        domain: postgres
+        limit_type: hard
+        limit_item: nofile
+        value: '131072'

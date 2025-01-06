@@ -1,0 +1,341 @@
+[root@rac01 postgres_repmgr]# ansible-playbook  postgres_repmgr.yaml 
+
+PLAY [postgres_repmgr] ************************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ************************************************************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : set hostname on node1] ************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : set hostname on node2] ************************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : Check if packages are installed] **************************************************************************************************************************************************************
+ok: [192.168.8.103] => (item=expect)
+ok: [192.168.8.102] => (item=expect)
+
+TASK [postgres_repmgr : Generate /etc/hosts content] ******************************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : Read content from remote /tmp/hosts_content] **************************************************************************************************************************************************
+changed: [192.168.8.102 -> 192.168.8.102]
+changed: [192.168.8.103 -> 192.168.8.103]
+
+TASK [postgres_repmgr : Use the content read from the remote file] ****************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : check group for postgres] *********************************************************************************************************************************************************************
+fatal: [192.168.8.102]: FAILED! => {"changed": false, "cmd": "grep postgres /etc/group", "delta": "0:00:00.048020", "end": "2025-01-03 16:32:52.366260", "msg": "non-zero return code", "rc": 1, "start": "2025-01-03 16:32:52.318240", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+...ignoring
+fatal: [192.168.8.103]: FAILED! => {"changed": false, "cmd": "grep postgres /etc/group", "delta": "0:00:00.043753", "end": "2025-01-03 16:32:52.253046", "msg": "non-zero return code", "rc": 1, "start": "2025-01-03 16:32:52.209293", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+...ignoring
+
+TASK [postgres_repmgr : add group for postgres] ***********************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : check group for oinstall] *********************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : add group for oinstall] ***********************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+skipping: [192.168.8.103]
+
+TASK [postgres_repmgr : check user for postgres] **********************************************************************************************************************************************************************
+fatal: [192.168.8.102]: FAILED! => {"changed": false, "cmd": "id postgres", "delta": "0:00:00.066365", "end": "2025-01-03 16:32:58.141074", "msg": "non-zero return code", "rc": 1, "start": "2025-01-03 16:32:58.074709", "stderr": "id: postgres: no such user", "stderr_lines": ["id: postgres: no such user"], "stdout": "", "stdout_lines": []}
+...ignoring
+fatal: [192.168.8.103]: FAILED! => {"changed": false, "cmd": "id postgres", "delta": "0:00:00.058909", "end": "2025-01-03 16:32:58.008202", "msg": "non-zero return code", "rc": 1, "start": "2025-01-03 16:32:57.949293", "stderr": "id: postgres: no such user", "stderr_lines": ["id: postgres: no such user"], "stdout": "", "stdout_lines": []}
+...ignoring
+
+TASK [postgres_repmgr : Create postgres user with oinstall group] *****************************************************************************************************************************************************
+changed: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : change password for postgres] *****************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : postgres_repmgr cluster] **********************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : declare host group] ***************************************************************************************************************************************************************************
+ok: [192.168.8.102] => (item=192.168.8.102)
+ok: [192.168.8.102] => (item=192.168.8.103)
+ok: [192.168.8.103] => (item=192.168.8.102)
+ok: [192.168.8.103] => (item=192.168.8.103)
+
+TASK [postgres_repmgr : copy sshUserSetup on node1] *******************************************************************************************************************************************************************
+skipping: [192.168.8.103] => (item=sshUserSetup.sh) 
+skipping: [192.168.8.103] => (item=auto_postgres_ssh.sh) 
+ok: [192.168.8.102] => (item=sshUserSetup.sh)
+ok: [192.168.8.102] => (item=auto_postgres_ssh.sh)
+
+TASK [postgres_repmgr : clear postgres user ssh] **********************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : config postgres user ssh on node1] ************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+[WARNING]: Module remote_tmp /home/postgres/.ansible/tmp did not exist and was created with a mode of 0700, this may cause issues when running as another user. To avoid this, create the remote_tmp dir with the
+correct permissions manually
+
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : copy sshUserSetup on node2] *******************************************************************************************************************************************************************
+skipping: [192.168.8.102] => (item=auto_postgres_ssh02.sh) 
+ok: [192.168.8.103] => (item=auto_postgres_ssh02.sh)
+
+TASK [postgres_repmgr : config postgres user ssh on node2] ************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : add bash_profile for postgres] ****************************************************************************************************************************************************************
+changed: [192.168.8.103] => (item={'line': ' '})
+changed: [192.168.8.102] => (item={'line': ' '})
+changed: [192.168.8.103] => (item={'line': '### for postgres '})
+changed: [192.168.8.102] => (item={'line': '### for postgres '})
+changed: [192.168.8.102] => (item={'line': 'export PGHOME=/usr/pgsql-15'})
+changed: [192.168.8.103] => (item={'line': 'export PGHOME=/usr/pgsql-15'})
+changed: [192.168.8.103] => (item={'line': 'export PGDATA=/db/postgres/data/'})
+changed: [192.168.8.102] => (item={'line': 'export PGDATA=/db/postgres/data/'})
+changed: [192.168.8.103] => (item={'line': 'export PATH=$PGHOME/bin:$PATH'})
+changed: [192.168.8.102] => (item={'line': 'export PATH=$PGHOME/bin:$PATH'})
+changed: [192.168.8.103] => (item={'line': 'export LANG=en_US.UTF-8'})
+changed: [192.168.8.102] => (item={'line': 'export LANG=en_US.UTF-8'})
+changed: [192.168.8.103] => (item={'line': 'export LD_LIBRARY_PATH=$PGHOME/lib:$LD_LIBRARY_PATH'})
+changed: [192.168.8.102] => (item={'line': 'export LD_LIBRARY_PATH=$PGHOME/lib:$LD_LIBRARY_PATH'})
+
+TASK [postgres_repmgr : change postgres group] ************************************************************************************************************************************************************************
+changed: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : prepare dir] **********************************************************************************************************************************************************************************
+changed: [192.168.8.103] => (item=/db/postgres/data/)
+changed: [192.168.8.102] => (item=/db/postgres/data/)
+
+TASK [postgres_repmgr : download rpm] *********************************************************************************************************************************************************************************
+ok: [192.168.8.103] => (item={'name': 'libzstd-1.5.5-1.el7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'libzstd-1.5.5-1.el7.x86_64.rpm'})
+ok: [192.168.8.103] => (item={'name': 'postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.103] => (item={'name': 'postgresql15-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'postgresql15-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.103] => (item={'name': 'postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.103] => (item={'name': 'postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.103] => (item={'name': 'repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm'})
+ok: [192.168.8.102] => (item={'name': 'repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm'})
+
+TASK [postgres_repmgr : install rpm] **********************************************************************************************************************************************************************************
+changed: [192.168.8.102] => (item=libzstd-1.5.5-1.el7.x86_64.rpm)
+changed: [192.168.8.103] => (item=libzstd-1.5.5-1.el7.x86_64.rpm)
+changed: [192.168.8.103] => (item=postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.102] => (item=postgresql15-libs-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.102] => (item=postgresql15-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.103] => (item=postgresql15-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.102] => (item=postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.103] => (item=postgresql15-server-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.102] => (item=postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.103] => (item=postgresql15-contrib-15.10-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.102] => (item=repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm)
+changed: [192.168.8.103] => (item=repmgr_15-5.4.1-1PGDG.rhel7.x86_64.rpm)
+
+TASK [postgres_repmgr : pam_limits] ***********************************************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : pam_limits] ***********************************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : pam_limits] ***********************************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : pam_limits] ***********************************************************************************************************************************************************************************
+ok: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : change dir postgres] **************************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : Add postgresql system server] *****************************************************************************************************************************************************************
+changed: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : ensure postgresql-15  is enabled] *************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : pg init] **************************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : start postgresql-15] **************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : prepare archive dir] **************************************************************************************************************************************************************************
+changed: [192.168.8.103] => (item=/db/postgres/archive/)
+changed: [192.168.8.102] => (item=/db/postgres/archive/)
+
+TASK [postgres_repmgr : postgresql.conf to the server] ****************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : Add PostgreSQL configuration] *****************************************************************************************************************************************************************
+skipping: [192.168.8.103] => (item=# TYPE  DATABASE    USER    ADDRESS       METHOD) 
+skipping: [192.168.8.103] => (item=local     all       all                    trust) 
+skipping: [192.168.8.103] => (item=host      all       all    127.0.0.1/32    trust) 
+skipping: [192.168.8.103] => (item=host      all       all    0.0.0.0/0       md5) 
+skipping: [192.168.8.103] => (item=host   replication  all    0.0.0.0/0       md5) 
+skipping: [192.168.8.103] => (item=local  replication  all                    trust) 
+changed: [192.168.8.102] => (item=# TYPE  DATABASE    USER    ADDRESS       METHOD)
+changed: [192.168.8.102] => (item=local     all       all                    trust)
+changed: [192.168.8.102] => (item=host      all       all    127.0.0.1/32    trust)
+changed: [192.168.8.102] => (item=host      all       all    0.0.0.0/0       md5)
+changed: [192.168.8.102] => (item=host   replication  all    0.0.0.0/0       md5)
+changed: [192.168.8.102] => (item=local  replication  all                    trust)
+
+TASK [postgres_repmgr : restart postgresql-15] ************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : change password for postgres user] ************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : create repmgr] ********************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : repmgr01.conf.js to the primary] **************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : primary register] *****************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : repmgr02.conf.js to the standby] **************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : using repmar standby clone] *******************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : ensure postgresql-15  is enabled in standby] **************************************************************************************************************************************************
+skipping: [192.168.8.102]
+ok: [192.168.8.103]
+
+TASK [postgres_repmgr : start postgresql-15 in standby] ***************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : standby register] *****************************************************************************************************************************************************************************
+skipping: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : echo cluster] *********************************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : output cluster show results] ******************************************************************************************************************************************************************
+ok: [192.168.8.102] => {
+    "cluster_output.stdout": " ID | Name  | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                                         \n----+-------+---------+-----------+----------+----------+----------+----------+----------------------------------------------------------------------------\n 1  | rac01 | primary | * running |          | default  | 100      | 1        | host=rac01 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2\n 2  | rac02 | standby |   running | rac01    | default  | 100      | 1        | host=rac02 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2"
+}
+skipping: [192.168.8.103]
+
+TASK [postgres_repmgr : create postgres_exporter user] ****************************************************************************************************************************************************************
+skipping: [192.168.8.103]
+changed: [192.168.8.102]
+
+TASK [postgres_repmgr : Download postgres Exporter] *******************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+TASK [postgres_repmgr : Add postgres exporter system server] **********************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : Ensure postgres exporter is enabled] **********************************************************************************************************************************************************
+ok: [192.168.8.103]
+ok: [192.168.8.102]
+
+TASK [postgres_repmgr : Start postgres exporter] **********************************************************************************************************************************************************************
+changed: [192.168.8.102]
+changed: [192.168.8.103]
+
+PLAY RECAP ************************************************************************************************************************************************************************************************************
+192.168.8.102              : ok=46   changed=27   unreachable=0    failed=0    skipped=9    rescued=0    ignored=2   
+192.168.8.103              : ok=39   changed=20   unreachable=0    failed=0    skipped=16   rescued=0    ignored=2   
+
+[root@rac01 postgres_repmgr]# 
+
+
+[root@rac02 ~]#su - postgres                   
+Last login: Fri Jan  3 16:45:31 CST 2025 on pts/0
+[postgres@rac02 ~]$ repmgr -f /etc/repmgr/15/repmgr.conf cluster show
+ ID | Name  | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                                         
+----+-------+---------+-----------+----------+----------+----------+----------+----------------------------------------------------------------------------
+ 1  | rac01 | primary | * running |          | default  | 100      | 1        | host=rac01 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2
+ 2  | rac02 | standby |   running | rac01    | default  | 100      | 1        | host=rac02 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2
+[postgres@rac02 ~]$ repmgr -f /etc/repmgr/15/repmgr.conf standby switchover --siblings-follow --force-rewind --dry-run
+NOTICE: checking switchover on node "rac02" (ID: 2) in --dry-run mode
+INFO: prerequisites for using pg_rewind are met
+INFO: SSH connection to host "rac01" succeeded
+INFO: able to execute "repmgr" on remote host "rac01"
+WARNING: option "--sibling-nodes" specified, but no sibling nodes exist
+INFO: 1 walsenders required, 10 available
+INFO: demotion candidate is able to make replication connection to promotion candidate
+INFO: 0 pending archive files
+INFO: replication lag on this standby is 0 seconds
+NOTICE: attempting to pause repmgrd on 2 nodes
+NOTICE: local node "rac02" (ID: 2) would be promoted to primary; current primary "rac01" (ID: 1) would be demoted to standby
+INFO: following shutdown command would be run on node "rac01":
+  "/usr/pgsql-15/bin/pg_ctl  -D '/db/postgres/data' -W -m fast stop"
+INFO: parameter "shutdown_check_timeout" is set to 60 seconds
+INFO: prerequisites for executing STANDBY SWITCHOVER are met
+[postgres@rac02 ~]$ repmgr -f /etc/repmgr/15/repmgr.conf standby switchover --siblings-follow --force-rewind
+NOTICE: executing switchover on node "rac02" (ID: 2)
+WARNING: option "--sibling-nodes" specified, but no sibling nodes exist
+NOTICE: attempting to pause repmgrd on 2 nodes
+NOTICE: local node "rac02" (ID: 2) will be promoted to primary; current primary "rac01" (ID: 1) will be demoted to standby
+NOTICE: stopping current primary node "rac01" (ID: 1)
+NOTICE: issuing CHECKPOINT on node "rac01" (ID: 1) 
+DETAIL: executing server command "/usr/pgsql-15/bin/pg_ctl  -D '/db/postgres/data' -W -m fast stop"
+INFO: checking for primary shutdown; 1 of 60 attempts ("shutdown_check_timeout")
+INFO: checking for primary shutdown; 2 of 60 attempts ("shutdown_check_timeout")
+INFO: checking for primary shutdown; 3 of 60 attempts ("shutdown_check_timeout")
+NOTICE: current primary has been cleanly shut down at location 0/4000028
+NOTICE: promoting standby to primary
+DETAIL: promoting server "rac02" (ID: 2) using pg_promote()
+NOTICE: waiting up to 60 seconds (parameter "promote_check_timeout") for promotion to complete
+NOTICE: STANDBY PROMOTE successful
+DETAIL: server "rac02" (ID: 2) was successfully promoted to primary
+NOTICE: issuing CHECKPOINT on node "rac02" (ID: 2) 
+ERROR: unable to execute CHECKPOINT
+WARNING: node "rac01" not found in "pg_stat_replication"
+INFO: waiting for node "rac01" (ID: 1) to connect to new primary; 1 of max 60 attempts (parameter "node_rejoin_timeout")
+DETAIL: checking for record in node "rac02"'s "pg_stat_replication" table where "application_name" is "rac01"
+NOTICE: node "rac02" (ID: 2) promoted to primary, node "rac01" (ID: 1) demoted to standby
+NOTICE: switchover was successful
+DETAIL: node "rac02" is now primary and node "rac01" is attached as standby
+NOTICE: STANDBY SWITCHOVER has completed successfully
+[postgres@rac02 ~]$ repmgr -f /etc/repmgr/15/repmgr.conf cluster show
+ ID | Name  | Role    | Status    | Upstream | Location | Priority | Timeline | Connection string                                                         
+----+-------+---------+-----------+----------+----------+----------+----------+----------------------------------------------------------------------------
+ 1  | rac01 | standby |   running | rac02    | default  | 100      | 1        | host=rac01 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2
+ 2  | rac02 | primary | * running |          | default  | 100      | 2        | host=rac02 user=repmgr password=Nfjd_jyht1 dbname=repmgr connect_timeout=2
+[postgres@rac02 ~]$ 
