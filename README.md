@@ -38,6 +38,11 @@ postgres_node_name: rac
 
 ```
 
+## ssh
+```markdown
+In oracle linux 9 . need change the sshUserSetup.sh scripts BITS=4096
+```
+
 # Notice
 These scripts are optimized based on the installation processes shared by users online. If there is any infringement, please contact me in time to delete them.
 Hope this can be of help to you
