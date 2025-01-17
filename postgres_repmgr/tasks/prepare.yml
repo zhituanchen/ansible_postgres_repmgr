@@ -8,6 +8,16 @@
       shell: hostnamectl set-hostname {{postgres_node_name}}02
       when: cluster_role == "standby"
 
+    - name: change SELinux is disable
+      selinux:
+        state: disabled
+
+    - name: stop firewall
+      shell: systemctl stop firewalld
+
+    - name: stop auto start a firewall
+      shell: systemctl disable firewalld
+
     - name: Check if packages are installed
       command: "rpm -q {{ item }}"
       with_items:
